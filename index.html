@@ -4,9 +4,20 @@
     <link rel="stylesheet" href="/css/styles.css" />
 
     <body onload="init()">
+
     <div id="plot-area">
-        <svg width="600" height="600"></svg>
+        <svg width="800" height="600"></svg>
+        <form>
+            <label for="start_date">Start date:</label>
+            <input type="text" id="start_date" name="start_date">
+            <br>
+            <label for="end_date">End date:</label>
+            <input type="text" id="end_date" name="end_date">
+        </form>
+
     </div>
+
+
     <script>
     async function init() {
 
@@ -16,22 +27,39 @@
             width = +svg.attr("width") - 2*margin,
             height = +svg.attr("height") - 2*margin;
 
-        //const path = "Programming_Languages.csv"
+        const formatDate = d3.utcParse("%Y-%m") //https://d3js.org/d3-time-format
 
-        // Data to Plot
-        const data = [
-            [1,1],
-            [2,2],
-            [3,10],
-            [60, 80],
-            [100, 95]
-        ]
+        // Read Data from CSV
+        const data = await d3.csv("ProgrammingLanguages_Index.csv", function(d) {
+            return {
+                index : +d.Index,
+                month : formatDate(d.Month),
+                python : +d.Python,
+                java : +d.Java,
+                javascript : +d.JavaScript,
+                c: +d["C++"],
+                r: +d["R"]
+            }
+        })
+
+        // Structure: data[0-250]['index','month', etc.] = value
+        // It would be convenient if each column of the csv was returned as a separate array.
+        // This is discussed here: https://stackoverflow.com/questions/7999971/read-csv-data-with-d3-csv-each-column-in-separate-array
+
 
         // X Scale
-        var x = d3.scaleLinear().domain([0,100]).range([0,width]);
+        var x = d3.scaleLinear().domain([0,250]).range([0,width]);
+        //var x = d3.scaleTime(d3.extent(function(d) {return data.Month;}))
 
         // Y Scale
         var y = d3.scaleLinear().domain([0,100]).range([height,0]);
+
+        var cols = ['Index', 'Month', 'Python', 'Java', 'JavaScript', 'C++', 'R']
+
+        // Color Palette
+        var color = d3.scaleOrdinal()
+        .domain(cols)
+        .range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'])
 
         // Title
         svg.append('text')
@@ -39,7 +67,7 @@
         .attr('y', margin/2)
         .attr('text-anchor', 'middle')
         .style('font-size', 20)
-        .text('Line Chart');
+        .text('Relative Popularity of Various Programming Languages');
 
         // X label
         svg.append('text')
@@ -47,14 +75,14 @@
         .attr('y', height + margin + margin/2)
         .attr('text-anchor', 'middle')
         .style('font-size', 12)
-        .text('Independent axis')
+        .text('Time')
 
         // Y label
         svg.append('text')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + margin/2 + ',' + (height/2 + margin) + ')rotate(-90)')
         .style('font-size', 12)
-        .text('Dependent');
+        .text('Relative Popularity');
 
         // Left Axis
         svg.append('g')
@@ -67,63 +95,6 @@
         .call(d3.axisBottom(x));
 
 
-
-        // (opacity of 1 == completely opaque), (opacity of 0 == completely transparent/hidden)
-        // stroke is used to add a border to SVG shapes
-        var mouseover = function(d) {
-            my_tooltip.style('opacity', 1)
-            d3.select(this).style('stroke', 'black').style('opacity', 1)
-        }
-
-        var mousemove = function(d) {
-            my_tooltip
-            .html('value is ' + d[0])
-            .style('left', (d3.mouse(this)[0]+70) + 'px')
-            .style('top', (d3.mouse(this)[1]) + 'px')
-        }
-
-        var mouseleave = function(d) {
-            my_tooltip
-            .style('opacity', 0)
-            d3.select(this)
-            .style('stroke', 'none')
-            .style('opacity', 0.8)
-        }
-
-        // Add Scatter dots
-        svg.append('g')
-        .selectAll('dot')
-        .data(data)
-        .enter()
-        .append('circle')
-        .attr('cx', function(d) {return x(d[0]);})
-        .attr('cy', function(d) {return y(d[1]);})
-        .attr('r', 5)
-        .attr('transform', 'translate(' + margin + ',' + margin + ')')
-        .style('fill', '#CC0000')
-        .on('mouseover', mouseover)
-        .on('mousemove', mousemove)
-        .on('mouseleave', mouseleave);
-
-
-
-        // Plot line
-        var line = d3.line()
-            .x(function(d) {return x(d[0]);})
-            .y(function(d) {return y(d[1]);})
-
-        svg.append("path")
-        .datum(data)
-        .attr('class', 'line')
-        .attr('transform', 'translate(' + margin + ',' + margin + ')')
-        .attr('d', line)
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", '2');
-
-        // Basic line chart reference: https://www.educative.io/answers/how-to-create-a-line-chart-using-d3
-
-        // Tooltips reference: https://d3-graph-gallery.com/graph/interactivity_tooltip.html
         // create a tooltip
         var my_tooltip = d3.select('#plot-area')
         .append('div')
@@ -136,7 +107,163 @@
         .style('padding', '5px');
 
 
+        // (opacity of 1 == completely opaque), (opacity of 0 == completely transparent/hidden)
+        // stroke is used to add a border to SVG shapes
+        var mouseover = function(d) {
+            my_tooltip.style('opacity', 1)
+            d3.select(this).style('stroke', 'black').style('opacity', 1)
+        }
 
+        var mousemove = function(d) {
+            my_tooltip
+            .html('value is ' + d3.event.pageX)
+            .style('left', (d3.mouse(this)[0]+70) + 'px')
+            .style('top', (d3.mouse(this)[1]+70) + 'px')
+            .style("left", (d3.event.pageX)+"px")
+            .style("top", (d3.event.pageY)+"px")
+        }
+
+        var mouseleave = function(d) {
+            my_tooltip
+            .style('opacity', 0)
+            d3.select(this)
+            .style('stroke', 'none')
+            .style('opacity', 0.8)
+        }
+
+
+        // Add Scatter dots
+        svg.append('g')
+        .selectAll('circle')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('cx', function(d) {return x(d.index);})
+        .attr('cy', function(d) {return y(d.javascript);})
+        .attr('r', 2)
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .style('fill', '#CC0000')
+        .on('mouseover', mouseover)
+        .on('mousemove', mousemove)
+        .on('mouseleave', mouseleave);
+
+
+
+        // Plot single line
+        // Line1
+        var my_line = d3.line()
+            .x(function(d) {return x(d.index);})
+            .y(function(d) {return y(d.python);});
+
+        svg.append("path")
+        .datum(data)
+        .attr('class', 'line')
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .attr('d', my_line)
+        .attr("fill", "none")
+        .attr("stroke", "green")
+        .attr("stroke-width", '4')
+        .on('mouseover', mouseover)
+        .on('mousemove', mousemove)
+        .on('mouseleave', mouseleave);
+
+        // Line2
+        var my_line = d3.line()
+            .x(function(d) {return x(d.index);})
+            .y(function(d) {return y(d.java);});
+
+        svg.append("path")
+        .datum(data)
+        .attr('class', 'line')
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .attr('d', my_line)
+        .attr("fill", "none")
+        .attr("stroke", "purple")
+        .attr("stroke-width", '4');
+
+        // Line3
+        var my_line = d3.line()
+            .x(function(d) {return x(d.index);})
+            .y(function(d) {return y(d.c);});
+
+        svg.append("path")
+        .datum(data)
+        .attr('class', 'line')
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .attr('d', my_line)
+        .attr("fill", "none")
+        .attr("stroke", "yellow")
+        .attr("stroke-width", '4');
+
+        // Line4
+        var my_line = d3.line()
+            .x(function(d) {return x(d.index);})
+            .y(function(d) {return y(d.r);});
+
+        svg.append("path")
+        .datum(data)
+        .attr('class', 'line')
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .attr('d', my_line)
+        .attr("fill", "none")
+        .attr("stroke", "brown")
+        .attr("stroke-width", '4');
+
+        // Plot multiple lines
+        /*
+        var line = d3.line()
+            .x(function(d) {return x(d.Index);})
+            .y(function(d) {return y(d.Python);})
+
+        svg
+        .append('path')
+        .datum(data)
+        .attr('class', 'line')
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .attr('fill', 'none')
+        .attr('stroke', function(d, i) {return color[i]})
+        .attr('stroke-width', '4')
+        .attr('d', line);*/
+
+
+
+        var size = 20
+
+        // Add colored rectangles to legend
+        svg.selectAll("mydots")
+        .data(cols)
+        .enter()
+        .append("rect")
+            .attr("x", width + margin)
+            .attr("y", function(d,i){ return margin + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
+            .attr("width", size)
+            .attr("height", size)
+            .style("fill", function(d){ return color(d)})
+
+        // Add text to legend
+        svg.selectAll("mylabels")
+        .data(cols)
+        .enter()
+        .append("text")
+            .attr("x", width + margin*1.25)
+            .attr("y", function(d,i){ return margin + i*(size+5) + (size/2)}) // 100 is where the first dot appears. 25 is the distance between dots
+            .style("fill", function(d){ return color(d)})
+            .text(function(d){ return d})
+            .attr("text-anchor", "left")
+            .style("alignment-baseline", "middle");
+
+        form_data = [1]
+
+        // Add filters
+        svg.selectAll('filters')
+        .data(form_data)
+        .enter()
+        .append('form')
+        .append('label', 'Enter here:')
+        .attr('for', 'cars_id')
+        .append('input')
+        .attr('id', 'cars_id')
+        .attr('value', 'a');
 
         /*
         d3.selectAll("circle")
@@ -147,10 +274,19 @@
         });
         */
 
+        // RESOURCES
+        // Multi-line chart reference: https://d3-graph-gallery.com/graph/line_several_group.html
+        // Basic line chart reference: https://www.educative.io/answers/how-to-create-a-line-chart-using-d3
+        // Categorical Legend reference: https://d3-graph-gallery.com/graph/custom_legend.html
+        // Tooltips reference: https://d3-graph-gallery.com/graph/interactivity_tooltip.html
+
+        // TASKS
         // TODO-1: add multiple lines to chart
-        // TODO-2: add filters
-        // TODO-3: add real data
-        // TODO-3: add pages with explanations and ability to navigate between them
+        // TODO-2: date on x axis
+        // TODO-3: add filters
+        // TODO-4: add real data
+        // TODO-5: add legend
+        // TODO-6: add pages with explanations and ability to navigate between them
     }
 
     </script>
