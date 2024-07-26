@@ -5,17 +5,27 @@
 
     <body onload="init()">
 
+    <div id="welcome-bar">Exploring Data with D3</div>
+
     <div id="plot-area">
-        <svg width="800" height="600"></svg>
-        <form>
-            <label for="start_date">Start date:</label>
-            <input type="text" id="start_date" name="start_date">
-            <br>
-            <label for="end_date">End date:</label>
-            <input type="text" id="end_date" name="end_date">
-        </form>
+        <div>
+            <svg width="800" height="600" border="solid"></svg>
+            <div id="tooltip"></div>
+        </div>
+
+        <div id="forms">
+            <form>
+                <label for="start_date">Start date:</label>
+                <input type="text" id="start_date" name="start_date">
+                <p> - </p>
+                <label for="end_date">End date:</label>
+                <input type="text" id="end_date" name="end_date">
+            </form>
+        </div>
 
     </div>
+
+    <div id="footer-bar">Created by Austin Jarrett</div>
 
 
     <script>
@@ -41,6 +51,10 @@
                 r: +d["R"]
             }
         })
+        console.log('tests!')
+        //console.log(data)
+        //cols = data.columns
+        //console.log(cols)
 
         // Structure: data[0-250]['index','month', etc.] = value
         // It would be convenient if each column of the csv was returned as a separate array.
@@ -74,14 +88,14 @@
         .attr('x', width/2 + margin)
         .attr('y', height + margin + margin/2)
         .attr('text-anchor', 'middle')
-        .style('font-size', 12)
+        .style('font-size', 14)
         .text('Time')
 
         // Y label
         svg.append('text')
         .attr('text-anchor', 'middle')
         .attr('transform', 'translate(' + margin/2 + ',' + (height/2 + margin) + ')rotate(-90)')
-        .style('font-size', 12)
+        .style('font-size', 14)
         .text('Relative Popularity');
 
         // Left Axis
@@ -94,9 +108,15 @@
         .attr('transform', 'translate(' + margin + ',' + (height + margin) + ')')
         .call(d3.axisBottom(x));
 
+        // Form
+        svg.append('form')
 
-        // create a tooltip
-        var my_tooltip = d3.select('#plot-area')
+
+        // Create a tooltip
+        var my_tooltip = d3.select('#tooltip');
+
+        /* 
+        var my_tooltip = d3.select('#tooltip')
         .append('div')
         .style('opacity', 0)
         .attr('class', 'tooltip')
@@ -106,29 +126,49 @@
         .style('border-radius', '5px')
         .style('padding', '5px');
 
+        // is equivalent to:
+        <div id="tooltip"></div>
+        #tooltip {
+            opacity: 0;
+            position: absolute;
+            text-align: center;
+            width: 60px;
+            height: 40px;
+            background: white;
+            border: solid 1px;
+            border-width: 2px;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        */
+
 
         // (opacity of 1 == completely opaque), (opacity of 0 == completely transparent/hidden)
         // stroke is used to add a border to SVG shapes
-        var mouseover = function(d) {
+        var mouseover = function(d, i) {
             my_tooltip.style('opacity', 1)
-            d3.select(this).style('stroke', 'black').style('opacity', 1)
+            .style('left', (d3.event.pageX) + 'px')
+            .style('top', (d3.event.pageY) + 'px')
+            //.style('left', (d3.mouse(this)[0]+70) + 'px')
+            //.style('top', (d3.mouse(this)[1]+70) + 'px')
+            //d3.select(this).style('stroke', 'black')
+            .html('Item #' + i + ' is ' + d[i])
         }
 
-        var mousemove = function(d) {
-            my_tooltip
-            .html('value is ' + d3.event.pageX)
-            .style('left', (d3.mouse(this)[0]+70) + 'px')
-            .style('top', (d3.mouse(this)[1]+70) + 'px')
-            .style("left", (d3.event.pageX)+"px")
-            .style("top", (d3.event.pageY)+"px")
+        var mousemove = function(d, i) {
+            my_tooltip.style('opacity', 1)
+            .style('left', (d3.event.pageX) + 'px')
+            .style('top', (d3.event.pageY) + 'px')
+            //.style('left', (d3.mouse(this)[0]+70) + 'px')
+            //.style('top', (d3.mouse(this)[1]+70) + 'px')
+            //d3.select(this).style('stroke', 'black')
+            .html('Item #' + i + ' is ' + d[i])
         }
 
         var mouseleave = function(d) {
             my_tooltip
             .style('opacity', 0)
-            d3.select(this)
-            .style('stroke', 'none')
-            .style('opacity', 0.8)
+            //d3.select(this).style('stroke', 'none').style('opacity', 0.8)
         }
 
 
@@ -150,7 +190,7 @@
 
 
         // Plot single line
-        // Line1
+        /*
         var my_line = d3.line()
             .x(function(d) {return x(d.index);})
             .y(function(d) {return y(d.python);});
@@ -162,7 +202,26 @@
         .attr('d', my_line)
         .attr("fill", "none")
         .attr("stroke", "green")
-        .attr("stroke-width", '4')
+        .attr("stroke-width", '2')
+        .on('mouseover', mouseover)
+        .on('mousemove', mousemove)
+        .on('mouseleave', mouseleave);
+        */
+
+        // Line1
+        var my_line = d3.line()
+            .x(function(d) {return x(d.index);})
+            .y(function(d) {return y(d.python);});
+
+        svg.append("path")
+        .datum(data)
+        .attr('class', 'line')
+        //.transition().duration(3000).delay(1000)
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .attr('d', my_line)
+        .attr("fill", "none")
+        .attr("stroke", "green")
+        .attr("stroke-width", '2')
         .on('mouseover', mouseover)
         .on('mousemove', mousemove)
         .on('mouseleave', mouseleave);
@@ -179,7 +238,7 @@
         .attr('d', my_line)
         .attr("fill", "none")
         .attr("stroke", "purple")
-        .attr("stroke-width", '4');
+        .attr("stroke-width", '2');
 
         // Line3
         var my_line = d3.line()
@@ -193,7 +252,7 @@
         .attr('d', my_line)
         .attr("fill", "none")
         .attr("stroke", "yellow")
-        .attr("stroke-width", '4');
+        .attr("stroke-width", '2');
 
         // Line4
         var my_line = d3.line()
@@ -207,7 +266,7 @@
         .attr('d', my_line)
         .attr("fill", "none")
         .attr("stroke", "brown")
-        .attr("stroke-width", '4');
+        .attr("stroke-width", '2');
 
         // Plot multiple lines
         /*
@@ -222,12 +281,50 @@
         .attr('transform', 'translate(' + margin + ',' + margin + ')')
         .attr('fill', 'none')
         .attr('stroke', function(d, i) {return color[i]})
-        .attr('stroke-width', '4')
+        .attr('stroke-width', '2')
         .attr('d', line);*/
 
 
 
         var size = 20
+
+        var forms = d3.select('#forms').append('form');
+
+        // ATTEMPT to add form elements near legend
+        forms.selectAll("stuff")
+        .data(cols)
+        .enter()
+        .append("input")
+            .attr("type", 'checkbox')
+            .attr("id", function(d,i){ return 'vehicle' + i ;})
+            .attr("name", function(d,i){ return 'vehicle' + i ;})
+            .attr("value", function(d,i){ return cols[i] ;})
+            .attr("x", width + margin)
+            .attr('y', function(d,i){ return margin + i*(size+5); })
+            .attr('transform', 'translate(' + margin + ',' + margin + ')');
+
+        forms.selectAll('stuff')
+        .data(cols)
+        .enter()
+        .append('label')
+            .html(function(d,i){ return cols[i] ;})
+            .attr("for", function(d,i){ return 'vehicle' + i ;});
+            
+        // Reference: changing inner text: https://www.geeksforgeeks.org/how-to-change-the-text-of-a-label-using-javascript/
+        // inner html: https://stackoverflow.com/questions/31826185/how-to-put-text-data-with-d3-js
+
+        /*
+        <form>
+            <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
+            <label for="vehicle1"> I have a bike</label><br>
+            <input type="checkbox" id="vehicle2" name="vehicle2" value="Car">
+            <label for="vehicle2"> I have a car</label><br>
+            <input type="checkbox" id="vehicle3" name="vehicle3" value="Boat">
+            <label for="vehicle3"> I have a boat</label>
+        </form>
+        */
+
+        // Reference legend with automatic hide/show: http://www.d3noob.org/2014/07/d3js-multi-line-graph-with-automatic.html
 
         // Add colored rectangles to legend
         svg.selectAll("mydots")
@@ -235,10 +332,10 @@
         .enter()
         .append("rect")
             .attr("x", width + margin)
-            .attr("y", function(d,i){ return margin + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
+            .attr("y", function(d,i){ return margin + i*(size+5);}) // 100 is where the first dot appears. 25 is the distance between dots
             .attr("width", size)
             .attr("height", size)
-            .style("fill", function(d){ return color(d)})
+            .style("fill", function(d){ return color(d);})
 
         // Add text to legend
         svg.selectAll("mylabels")
