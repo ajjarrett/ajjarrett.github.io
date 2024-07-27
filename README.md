@@ -1,7 +1,5 @@
 # ajjarrett.github.io
 
-This plot was inspired by PYPL (PopularitY of Programming Language) found at https://pypl.github.io/PYPL.html.
+This project is written using only the D3 JavaScript library to visualize Olympic medals by nation for competitions between the years of 2000-2022.
 
-Google Trends can be used to determine the popularity of different keywords by region. 
-
-For the dataset included in this project, the data was exported from Google Trends in CSV format for the popularity of five different programming languages in the United States over the last 20 years. (https://trends.google.com/trends/)  
+This plot uses data from: https://olympics.com/en/olympic-games/tokyo-2020/medals to collect the medal count by nation for different years of the Olympics. The data was copied from the olympics.com website to a Microsoft Excel spreadsheet, where it was then exported as a csv.  A python script was used to process the data into a usable format.  The data is available in the folder 'olympics_data' of this repository.

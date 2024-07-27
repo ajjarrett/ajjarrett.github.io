@@ -16,43 +16,59 @@
         <div id="forms">
             <script>
                 function to_submit() {
-                    console.log('Submitted!');
+                    // console.log('Submitted!'),
+                    // console.log(d3.select('#season').node().value); //gets selected option
+
+                    if (d3.select('#season').node().value === 'summer') {
+                        d3.select('#myRange')
+                        .attr('min', '2000')
+                        .attr('max', '2020')
+                        .attr('step', '4')
+                        .attr('value', '2020');
+                        var output = document.getElementById("demo");
+                        output.innerHTML = '2020' + ' ' + olympic_locations['2020'];
+                        init('2020');
+                    }
+                    else if (d3.select('#season').node().value === 'winter') {
+                        d3.select('#myRange')
+                        .attr('min', '2002')
+                        .attr('max', '2022')
+                        .attr('step', '4')
+                        .attr('value', '2022');
+                        var output = document.getElementById("demo");
+                        output.innerHTML = '2022' + ' ' + olympic_locations['2022'];
+                        init('2022');
+                    }
+                    else {
+                        d3.select('#myRange')
+                        .attr('min', '2000')
+                        .attr('max', '2022')
+                        .attr('step', '2')
+                        .attr('value', '2020');
+                        var output = document.getElementById("demo");
+                        output.innerHTML = '2020' + ' ' + olympic_locations['2020'];
+                        init('2020');                
+                    }
+
                 }
-                // range slider: https://www.w3schools.com/howto/howto_js_rangeslider.asp
             </script>
-            <label for="cars">Choose a car:</label>
-            <select id="cars" name="cars" onclick="to_submit()">
-              <option value="volvo">Volvo</option>
-              <option value="saab">Saab</option>
-              <option value="fiat">Fiat</option>
-              <option value="audi">Audi</option>
-            </select>
 
-            <button onclick="to_submit()">Submit</button>
+            <div id="season-selection">
+                <label for="season">Select Season(s) to View:</label>
+                <select id="season" name="season" onchange="to_submit()">
+                    <option value="both" selected>Both Seasons</option>
+                    <option value="summer">Summer Games</option>
+                    <option value="winter">Winter Games</option>
+                </select>
+            </div>
 
+            
             <div class="slidecontainer">
-                <input type="range" min="2000" max="2024" value="2022" class="slider" id="myRange" step="2">
+                <label for="myRange">Select Year to View:</label>
+                <input type="range" min="2000" max="2022" value="2020" class="slider" id="myRange" step="2">
                 <p id="demo"></p>
             </div>
-            <script>
-                var slider = document.getElementById("myRange");
-                var output = document.getElementById("demo");
-                output.innerHTML = slider.value; // Display the default slider value
-                var YEAR = slider.value;
 
-                // Update the current slider value (each time you drag the slider handle)
-                slider.oninput = function() {
-                output.innerHTML = this.value;
-                }             
-            </script>
-            
-            <form>
-                <label for="start_date">Start date:</label>
-                <input type="text" id="start_date" name="start_date">
-                <p> - </p>
-                <label for="end_date">End date:</label>
-                <input type="text" id="end_date" name="end_date">
-            </form>
         </div>
 
     </div>
@@ -60,15 +76,30 @@
     <div id="footer-bar">Created by Austin Jarrett</div>
 
     <script>
-    async function init() {
 
 
-
+    async function init(year = '2020') {
         // Set variable for svg, margin, width, height
+
         var svg = d3.select("svg"),
-            margin = 120;
+            margin = 150;
             width = +svg.attr("width") - 2*margin,
             height = +svg.attr("height") - 2*margin;
+
+        svg.selectAll("*").remove();
+
+        
+        // Background color according to summer or winter games
+        d3.select('plot-area')
+        var summer_games = ['2020', '2016', '2012', '2008', '2004', '2000']
+        var winter_games = ['2022', '2018', '2014', '2010', '2006', '2002']
+        var is_summer = summer_games.includes(year)
+
+        if (is_summer) {
+            d3.select('#plot-area').style('background-color', 'rgb(248, 232, 212)')
+        } else {
+            d3.select('#plot-area').style('background-color', 'rgb(212, 242, 248)')
+        }
 
         // X Scale
         var x = d3.scaleBand().range([0,width]);
@@ -78,7 +109,7 @@
 
         // Bar chart reference: https://www.youtube.com/watch?v=i0GdXYgw924
         // Read Data from CSV
-        const data = await d3.csv("Olympics" + YEAR + "_sorted.csv", function(d) {
+        const data = await d3.csv("../olympics_data/Olympics" + year + "_sorted.csv", function(d) {
             return {
                 Team : d.Team,
                 Gold : +d.Gold,
@@ -123,7 +154,6 @@
         .attr('dy', '.15em')
         .attr('transform', 'rotate(-65)');
 
-        // Rotate X axis labels Reference: http://www.d3noob.org/2013/01/how-to-rotate-text-labels-for-x-axis-of.html
 
         // Create a tooltip
         var my_tooltip = d3.select('#tooltip');
@@ -131,23 +161,40 @@
 
         // Mouseover Events
         var mouseover = function(d, i) {
+            //console.log('mouseover')
+            //console.log(d)
+            //console.log(d[1])
             my_tooltip.style('opacity', 1)
             .style('left', (d3.event.pageX) + 'px')
             .style('top', (d3.event.pageY) + 'px')
             //.style('left', (d3.mouse(this)[0]+70) + 'px')
             //.style('top', (d3.mouse(this)[1]+70) + 'px')
             //d3.select(this).style('stroke', 'black')
-            .html(d.data.Team + ' is ' + d[1])
+            .html(d.data.Team + '<br>' +
+                d.data.Gold + ' gold' + '<br>' +
+                d.data.Silver + ' silver' + '<br>' +
+                d.data.Bronze + ' bronze' + '<br>' +
+                d.data.Total + ' total'
+            )
         }
 
         var mousemove = function(d, i) {
+            //console.log('mousemove')
+            //console.log(d)
+            //console.log(d[1])
             my_tooltip.style('opacity', 1)
             .style('left', (d3.event.pageX) + 'px')
             .style('top', (d3.event.pageY) + 'px')
             //.style('left', (d3.mouse(this)[0]+70) + 'px')
             //.style('top', (d3.mouse(this)[1]+70) + 'px')
             //d3.select(this).style('stroke', 'black')
-            .html(d.data.Team +  '<br>' + d[1])
+            //.html(d.data.Team +  '<br>' + d[1])
+            .html(d.data.Team + '<br>' +
+                d.data.Gold + ' gold' + '<br>' +
+                d.data.Silver + ' silver' + '<br>' +
+                d.data.Bronze + ' bronze' + '<br>' +
+                d.data.Total + ' total'
+            )
         }
 
         var mouseleave = function(d) {
@@ -158,22 +205,76 @@
 
         // MEDALS: List of subgroups = header of the csv files
         var subgroups = data.columns.slice(1);
-        console.log(subgroups)
+        //console.log(subgroups)
         var index = subgroups.indexOf('Total');
         var removed_subgroup = subgroups.splice(index,1);
-        console.log(subgroups)
+        //console.log(subgroups)
 
         // NATIONS: List of groups = value of the first column called Team - shown on the X axis
         var groups = d3.map(data, function(d){return(d.Team)}).keys()
 
         // Color palette = one color per subgroup
+        color_list = ['#ffbf00','#bcc6cc','#cd7f32']
+        // gold: #ffbf00 https://www.color-hex.com/color-palette/2799
+        // silver: #bcc6cc
+        // bronze: #cd7f32
+
+
         var color = d3.scaleOrdinal()
         .domain(subgroups)
-        .range(['gold','silver','brown'])
+        .range(color_list)
 
         var stackedData = d3.stack()
         .keys(subgroups)(data)
-    
+
+
+        var size = 20;
+
+        // Add legend area
+        svg.append("rect")
+            .attr("x", width + margin * 1.05)
+            .attr("y", function(d,i){ return margin + i*(size+5);}) // 100 is where the first dot appears. 25 is the distance between dots
+            .attr("width", size*7)
+            .attr("height", size*5.5)
+            .attr('stroke', 'black')
+            .attr('stroke-width', '2')
+            .attr('rx', '20') // rounded corners reference: https://www.w3schools.com/graphics/svg_rect.asp
+            .attr('ry', '20')
+            .style("fill", 'white')
+
+        // Add colored rectangles to legend
+        svg.selectAll("mydots")
+        .data(color_list)
+        .enter()
+        .append("rect")
+            .attr("x", width + margin * 1.1)
+            .attr("y", function(d,i){ return margin + i*(size+5) + size/2 + size;}) // 100 is where the first dot appears. 25 is the distance between dots
+            .attr("width", size)
+            .attr("height", size)
+            .style("fill", function(d, i){ return color(i);})
+
+        var medal_colors = ['gold', 'silver', 'bronze']
+        // Add text to legend
+        svg.selectAll("mylabels")
+        .data(color_list)
+        .enter()
+        .append("text")
+            .attr("x", width + margin *1.3)
+            .attr("y", function(d,i){ return margin + i*(size+5) + (size) + (size)}) // 100 is where the first dot appears. 25 is the distance between dots
+            .style("fill", function(d, i){ return color(i)})
+            .text(function(d, i){ return medal_colors[i] + ' medals';})
+            .attr("text-anchor", "left")
+            .style("alignment-baseline", "middle");
+
+        svg
+        .append("text")
+            .attr("x", width + margin + margin/3)
+            .attr("y", function(d){ return margin + size}) // 100 is where the first dot appears. 25 is the distance between dots
+            .attr('fill', 'gray')
+            .text('LEGEND')
+            .attr("text-anchor", "left")
+            .style("alignment-baseline", "middle");
+        
         // Add BAR PLOT OF TOTALS
         /*
         svg.append('g')
@@ -192,6 +293,7 @@
         .on('mouseleave', mouseleave);
         */
 
+        // Create Stacked Bar Plot
         // Stacked bar plot reference: https://d3-graph-gallery.com/graph/barplot_stacked_basicWide.html
         svg.append("g")
         .selectAll("g")
@@ -215,18 +317,54 @@
         .on('mouseleave', mouseleave);
 
 
-
         // RESOURCES
-        // Reference legend with automatic hide/show: http://www.d3noob.org/2014/07/d3js-multi-line-graph-with-automatic.html
         // Tooltips reference: https://d3-graph-gallery.com/graph/interactivity_tooltip.html
+        // JavaScript functions reference: https://www.w3schools.com/js/js_function_parameters.asp
+        // Onclick reference: https://www.w3schools.com/jsref/event_onclick.asp
+        // Rotate X axis labels Reference: http://www.d3noob.org/2013/01/how-to-rotate-text-labels-for-x-axis-of.html
+        // Range slider reference: https://www.w3schools.com/howto/howto_js_rangeslider.asp
 
         // TASKS
         // TODO-1: add filters
         // TODO-2: add legend
+        // Update tooltip
+        // Background colors
+        // Button: all versus medals
         // TODO-3: add pages with explanations and ability to navigate between them
     }
 
-    // Alternate dataset: https://olympics.com/en/olympic-games/tokyo-2020/medals
+
+    var slider = document.getElementById("myRange");
+    var output = document.getElementById("demo");
+
+    var olympic_locations = {
+        '2000':'Sydney',
+        '2002':'Salt Lake City',
+        '2004':'Athens',
+        '2006':'Turin',
+        '2008':'Beijing',
+        '2010':'Vancouver',
+        '2012':'London',
+        '2014':'Sochi',
+        '2016':'Rio',
+        '2018':'PyeongChang',
+        '2020':'Tokyo',
+        '2022':'Beijing'
+    };
+
+    output.innerHTML = slider.value + ' ' + olympic_locations[slider.value]; // Display the default slider value
+
+
+    //var YEAR = slider.value;
+
+
+    // Update the current slider value (each time you drag the slider handle)
+    slider.oninput = function() {
+        output.innerHTML = this.value;
+        output.innerHTML = this.value + ' ' + olympic_locations[this.value]; // Display the default slider value
+        init(this.value);
+    }
+
     </script>
     </body>
 </html>
