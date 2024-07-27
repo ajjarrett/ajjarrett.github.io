@@ -1,0 +1,394 @@
+<html>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <style> circle {fill: lightblue; stroke: black;}</style>
+    <link rel="stylesheet" href="/css/styles.css" />
+
+    <body onload="init()">
+
+    <div id="welcome-bar">Exploring Data with D3</div>
+
+    <div id="plot-area">
+        <div>
+            <svg width="800" height="600" border="solid"></svg>
+            <div id="tooltip"></div>
+        </div>
+
+        <div id="forms">
+            <form>
+                <label for="start_date">Start date:</label>
+                <input type="text" id="start_date" name="start_date">
+                <p> - </p>
+                <label for="end_date">End date:</label>
+                <input type="text" id="end_date" name="end_date">
+            </form>
+        </div>
+
+    </div>
+
+    <div id="footer-bar">Created by Austin Jarrett</div>
+
+
+    <script>
+    async function init() {
+
+        // Set variable for svg, margin, width, height
+        var svg = d3.select("svg"),
+            margin = 100;
+            width = +svg.attr("width") - 2*margin,
+            height = +svg.attr("height") - 2*margin;
+
+        // Parse the date / time
+        //var formatDate = d3.time.format("%Y-%m").parse; 
+        const formatDate = d3.utcParse("%Y-%m") //https://d3js.org/d3-time-format
+
+        // Read Data from CSV
+        const data = await d3.csv("ProgrammingLanguages_Index.csv", function(d) {
+            return {
+                index : +d.Index,
+                month : formatDate(d.Month),
+                python : +d.Python,
+                java : +d.Java,
+                javascript : +d.JavaScript,
+                c: +d["C++"],
+                r: +d["R"]
+            }
+        })
+        console.log('tests!')
+        //console.log(data)
+        //cols = data.columns
+        //console.log(cols)
+
+        // Structure: data[0-250]['index','month', etc.] = value
+        // It would be convenient if each column of the csv was returned as a separate array.
+        // This is discussed here: https://stackoverflow.com/questions/7999971/read-csv-data-with-d3-csv-each-column-in-separate-array
+
+
+        // X Scale
+        var x = d3.scaleLinear().domain([0,250]).range([0,width]);
+        //var x = d3.scaleTime(d3.extent(function(d) {return data.Month;}))
+
+        // Y Scale
+        var y = d3.scaleLinear().domain([0,100]).range([height,0]);
+
+        var cols = ['Index', 'Month', 'Python', 'Java', 'JavaScript', 'C++', 'R']
+
+        // Color Palette
+        var color = d3.scaleOrdinal()
+        .domain(cols)
+        .range(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628','#f781bf','#999999'])
+
+        // Title
+        svg.append('text')
+        .attr('x', width/2 + margin)
+        .attr('y', margin/2)
+        .attr('text-anchor', 'middle')
+        .style('font-size', 20)
+        .text('Relative Popularity of Various Programming Languages');
+
+        // X label
+        svg.append('text')
+        .attr('x', width/2 + margin)
+        .attr('y', height + margin + margin/2)
+        .attr('text-anchor', 'middle')
+        .style('font-size', 14)
+        .text('Time')
+
+        // Y label
+        svg.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('transform', 'translate(' + margin/2 + ',' + (height/2 + margin) + ')rotate(-90)')
+        .style('font-size', 14)
+        .text('Relative Popularity');
+
+        // Left Axis
+        svg.append('g')
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .call(d3.axisLeft(y));
+
+        // Bottom Axis
+        svg.append('g')
+        .attr('transform', 'translate(' + margin + ',' + (height + margin) + ')')
+        .call(d3.axisBottom(x));
+
+        // Form
+        svg.append('form')
+
+
+        // Create a tooltip
+        var my_tooltip = d3.select('#tooltip');
+
+        /* 
+        var my_tooltip = d3.select('#tooltip')
+        .append('div')
+        .style('opacity', 0)
+        .attr('class', 'tooltip')
+        .style('background-color', 'white')
+        .style('border', 'solid')
+        .style('border-width', '2px')
+        .style('border-radius', '5px')
+        .style('padding', '5px');
+
+        // is equivalent to:
+        <div id="tooltip"></div>
+        #tooltip {
+            opacity: 0;
+            position: absolute;
+            text-align: center;
+            width: 60px;
+            height: 40px;
+            background: white;
+            border: solid 1px;
+            border-width: 2px;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        */
+
+
+        // (opacity of 1 == completely opaque), (opacity of 0 == completely transparent/hidden)
+        // stroke is used to add a border to SVG shapes
+        var mouseover = function(d, i) {
+            my_tooltip.style('opacity', 1)
+            .style('left', (d3.event.pageX) + 'px')
+            .style('top', (d3.event.pageY) + 'px')
+            //.style('left', (d3.mouse(this)[0]+70) + 'px')
+            //.style('top', (d3.mouse(this)[1]+70) + 'px')
+            //d3.select(this).style('stroke', 'black')
+            .html('Item #' + i + ' is ' + d[i])
+        }
+
+        var mousemove = function(d, i) {
+            my_tooltip.style('opacity', 1)
+            .style('left', (d3.event.pageX) + 'px')
+            .style('top', (d3.event.pageY) + 'px')
+            //.style('left', (d3.mouse(this)[0]+70) + 'px')
+            //.style('top', (d3.mouse(this)[1]+70) + 'px')
+            //d3.select(this).style('stroke', 'black')
+            .html('Item #' + i + ' is ' + d[i])
+        }
+
+        var mouseleave = function(d) {
+            my_tooltip
+            .style('opacity', 0)
+            //d3.select(this).style('stroke', 'none').style('opacity', 0.8)
+        }
+
+
+        // Add Scatter dots
+        svg.append('g')
+        .selectAll('circle')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('cx', function(d) {return x(d.index);})
+        .attr('cy', function(d) {return y(d.javascript);})
+        .attr('r', 2)
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .style('fill', '#CC0000')
+        .on('mouseover', mouseover)
+        .on('mousemove', mousemove)
+        .on('mouseleave', mouseleave);
+
+
+
+        // Plot single line
+        /*
+        var my_line = d3.line()
+            .x(function(d) {return x(d.index);})
+            .y(function(d) {return y(d.python);});
+
+        svg.append("path")
+        .datum(data)
+        .attr('class', 'line')
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .attr('d', my_line)
+        .attr("fill", "none")
+        .attr("stroke", "green")
+        .attr("stroke-width", '2')
+        .on('mouseover', mouseover)
+        .on('mousemove', mousemove)
+        .on('mouseleave', mouseleave);
+        */
+
+        // Line1
+        var my_line = d3.line()
+            .x(function(d) {return x(d.index);})
+            .y(function(d) {return y(d.python);});
+
+        svg.append("path")
+        .datum(data)
+        .attr('class', 'line')
+        //.transition().duration(3000).delay(1000)
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .attr('d', my_line)
+        .attr("fill", "none")
+        .attr("stroke", "green")
+        .attr("stroke-width", '2')
+        .on('mouseover', mouseover)
+        .on('mousemove', mousemove)
+        .on('mouseleave', mouseleave);
+
+        // Line2
+        var my_line = d3.line()
+            .x(function(d) {return x(d.index);})
+            .y(function(d) {return y(d.java);});
+
+        svg.append("path")
+        .datum(data)
+        .attr('class', 'line')
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .attr('d', my_line)
+        .attr("fill", "none")
+        .attr("stroke", "purple")
+        .attr("stroke-width", '2');
+
+        // Line3
+        var my_line = d3.line()
+            .x(function(d) {return x(d.index);})
+            .y(function(d) {return y(d.c);});
+
+        svg.append("path")
+        .datum(data)
+        .attr('class', 'line')
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .attr('d', my_line)
+        .attr("fill", "none")
+        .attr("stroke", "yellow")
+        .attr("stroke-width", '2');
+
+        // Line4
+        var my_line = d3.line()
+            .x(function(d) {return x(d.index);})
+            .y(function(d) {return y(d.r);});
+
+        svg.append("path")
+        .datum(data)
+        .attr('class', 'line')
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .attr('d', my_line)
+        .attr("fill", "none")
+        .attr("stroke", "brown")
+        .attr("stroke-width", '2');
+
+        // Plot multiple lines
+        /*
+        var line = d3.line()
+            .x(function(d) {return x(d.Index);})
+            .y(function(d) {return y(d.Python);})
+
+        svg
+        .append('path')
+        .datum(data)
+        .attr('class', 'line')
+        .attr('transform', 'translate(' + margin + ',' + margin + ')')
+        .attr('fill', 'none')
+        .attr('stroke', function(d, i) {return color[i]})
+        .attr('stroke-width', '2')
+        .attr('d', line);*/
+
+
+
+        var size = 20
+
+        var forms = d3.select('#forms').append('form');
+
+        // ATTEMPT to add form elements near legend
+        forms.selectAll("stuff")
+        .data(cols)
+        .enter()
+        .append("input")
+            .attr("type", 'checkbox')
+            .attr("id", function(d,i){ return 'vehicle' + i ;})
+            .attr("name", function(d,i){ return 'vehicle' + i ;})
+            .attr("value", function(d,i){ return cols[i] ;})
+            .attr("x", width + margin)
+            .attr('y', function(d,i){ return margin + i*(size+5); })
+            .attr('transform', 'translate(' + margin + ',' + margin + ')');
+
+        forms.selectAll('stuff')
+        .data(cols)
+        .enter()
+        .append('label')
+            .html(function(d,i){ return cols[i] ;})
+            .attr("for", function(d,i){ return 'vehicle' + i ;});
+            
+        // Reference: changing inner text: https://www.geeksforgeeks.org/how-to-change-the-text-of-a-label-using-javascript/
+        // inner html: https://stackoverflow.com/questions/31826185/how-to-put-text-data-with-d3-js
+
+        /*
+        <form>
+            <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
+            <label for="vehicle1"> I have a bike</label><br>
+            <input type="checkbox" id="vehicle2" name="vehicle2" value="Car">
+            <label for="vehicle2"> I have a car</label><br>
+            <input type="checkbox" id="vehicle3" name="vehicle3" value="Boat">
+            <label for="vehicle3"> I have a boat</label>
+        </form>
+        */
+
+        // Reference legend with automatic hide/show: http://www.d3noob.org/2014/07/d3js-multi-line-graph-with-automatic.html
+
+        // Add colored rectangles to legend
+        svg.selectAll("mydots")
+        .data(cols)
+        .enter()
+        .append("rect")
+            .attr("x", width + margin)
+            .attr("y", function(d,i){ return margin + i*(size+5);}) // 100 is where the first dot appears. 25 is the distance between dots
+            .attr("width", size)
+            .attr("height", size)
+            .style("fill", function(d){ return color(d);})
+
+        // Add text to legend
+        svg.selectAll("mylabels")
+        .data(cols)
+        .enter()
+        .append("text")
+            .attr("x", width + margin*1.25)
+            .attr("y", function(d,i){ return margin + i*(size+5) + (size/2)}) // 100 is where the first dot appears. 25 is the distance between dots
+            .style("fill", function(d){ return color(d)})
+            .text(function(d){ return d})
+            .attr("text-anchor", "left")
+            .style("alignment-baseline", "middle");
+
+        form_data = [1]
+
+        // Add filters
+        svg.selectAll('filters')
+        .data(form_data)
+        .enter()
+        .append('form')
+        .append('label', 'Enter here:')
+        .attr('for', 'cars_id')
+        .append('input')
+        .attr('id', 'cars_id')
+        .attr('value', 'a');
+
+        /*
+        d3.selectAll("circle")
+        .on("mouseover", function(d, i) {return tooltip.style("opacity", 1)
+        .style("left", (d3.event.pageX)+"px")
+        .style("top", (d3.event.pageY)+"px")
+        .html("Item #" + i + " is " + d);
+        });
+        */
+
+        // RESOURCES
+        // Multi-line chart reference: https://d3-graph-gallery.com/graph/line_several_group.html
+        // Basic line chart reference: https://www.educative.io/answers/how-to-create-a-line-chart-using-d3
+        // Categorical Legend reference: https://d3-graph-gallery.com/graph/custom_legend.html
+        // Tooltips reference: https://d3-graph-gallery.com/graph/interactivity_tooltip.html
+
+        // TASKS
+        // TODO-1: add multiple lines to chart
+        // TODO-2: date on x axis
+        // TODO-3: add filters
+        // TODO-4: add real data
+        // TODO-5: add legend
+        // TODO-6: add pages with explanations and ability to navigate between them
+    }
+
+    // Alternate dataset: https://olympics.com/en/olympic-games/tokyo-2020/medals
+    </script>
+    </body>
+</html>
