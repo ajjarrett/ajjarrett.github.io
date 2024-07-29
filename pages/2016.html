@@ -9,7 +9,7 @@
     <div id="welcome-bar">The Olympic Games</div>
 
     <div id="introduction-paragraphs">
-        <p>The Olympic Games present an opportunity for the world to come together and enjoy athleticism and sportsmanship from the world's greatest athletes as they compete in a variety of athletic events. The Olympic Games take place every four years at a different host city from around the world. Since 1994, the games have alternated between the Summer and Winter Olympics every two years. The visualization below shows the number of gold, silver, and bronze medals earned by competing nations at the Olympic Games between the years of 2000 and 2022. Tune in to the 2024 Summer Olympic Games taking place in Paris this year!</p>
+        <p>The Olympic Games present an opportunity for the world to come together and enjoy athleticism and sportsmanship from the world's greatest athletes as they compete in a variety of athletic events. Since 1994, the games have alternated between the Summer and Winter Olympics every two years and take place at a different host city from around the world. The visualization below shows the number of gold, silver, and bronze medals earned by competing nations at the Olympic Games between the years of 2000 and 2022. Tune in to the 2024 Summer Olympic Games taking place in Paris this year!</p>
     </div>
 
     <div id="plot-area">
@@ -58,11 +58,11 @@
             <div id="pages">Page 6 of 8</p>
             <button type="button"><a href="../pages/2012.html">Previous Page</a> </button>
             <button type="button"><a href="../pages/2020.html">Next Page</a> </button>
-            <p>Team USA has had incredible success at the Olympic Games throughout the past two decades.</p>
+            <p>Team USA has had incredible success at the Olympic Games throughout the past two decades, especially in the Summer Games.</p>
             <p>This page shows Team USA's success at the 2016 Summer Olympic Games. </p>
 
             <hr>
-            
+
 
             <div id="season-selection" hidden>
                 <br>
@@ -122,17 +122,17 @@
             .attr("height", size)
             .style("fill", function(d, i){ return color(i);})
 
-        var medal_colors = ['gold', 'silver', 'bronze']
+        var medal_colors = ['Gold', 'Silver', 'Bronze']
 
         // Add text to legend
         svg.selectAll("mylabels")
         .data(color_list)
         .enter()
         .append("text")
-            .attr("x", width + margin *1.3)
+            .attr("x", width + margin *1.27)
             .attr("y", function(d,i){ return margin_top + i*(size+5) + (size) + (size)}) // 100 is where the first dot appears. 25 is the distance between dots
             .style("fill", function(d, i){ return color(i)})
-            .text(function(d, i){ return medal_colors[i] + ' medals';})
+            .text(function(d, i){ return medal_colors[i] + ' Medals';})
             .attr("text-anchor", "left")
             .style("alignment-baseline", "middle");
 
@@ -166,7 +166,7 @@
 
         // Add colored rectangles to legend for background
         background_color_list = ['rgb(248, 232, 212)','rgb(212, 242, 248)']
-        season_list = ['summer', 'winter']
+        season_list = ['Summer', 'Winter']
         var background_color = d3.scaleOrdinal()
         .domain(season_list)
         .range(background_color_list)
@@ -186,11 +186,11 @@
         .data(background_color_list)
         .enter()
         .append("text")
-            .attr("x", width + margin *1.3)
+            .attr("x", width + margin *1.27)
             .attr("y", function(d,i){ return margin_top + size + 5  + (size*6.0) + i*(size+5) + size + size;}) // 100 is where the first dot appears. 25 is the distance between dots
             //.style("fill", function(d, i){ return background_color(i)})
             .style("fill", function(d, i){ return 'gray';})
-            .text(function(d, i){ return season_list[i] + ' games';})
+            .text(function(d, i){ return season_list[i] + ' Games';})
             .attr("text-anchor", "left")
             .style("alignment-baseline", "middle");
 
@@ -295,8 +295,9 @@
             //console.log(d)
             //console.log(d[1])
             my_tooltip.style('opacity', 1)
-            .style('left', (d3.event.pageX) + 'px')
-            .style('top', (d3.event.pageY) + 'px')
+            // Prevent tooltip flickering: https://stackoverflow.com/questions/15837650/why-is-my-tooltip-flashing-on-and-off
+            .style('left', (d3.event.pageX + 5) + 'px')
+            .style('top', (d3.event.pageY + 5) + 'px')
             //.style('left', (d3.mouse(this)[0]+70) + 'px')
             //.style('top', (d3.mouse(this)[1]+70) + 'px')
             //d3.select(this).style('stroke', 'black')
@@ -313,8 +314,9 @@
             //console.log(d)
             //console.log(d[1])
             my_tooltip.style('opacity', 1)
-            .style('left', (d3.event.pageX) + 'px')
-            .style('top', (d3.event.pageY) + 'px')
+            // Prevent tooltip flickering: https://stackoverflow.com/questions/15837650/why-is-my-tooltip-flashing-on-and-off
+            .style('left', (d3.event.pageX + 5) + 'px')
+            .style('top', (d3.event.pageY + 5) + 'px')
             //.style('left', (d3.mouse(this)[0]+70) + 'px')
             //.style('top', (d3.mouse(this)[1]+70) + 'px')
             //d3.select(this).style('stroke', 'black')
@@ -413,10 +415,10 @@
             label: "In the " + year + " Summer games in " + olympic_locations[year] +", Team USA won more medals than any other team with 121 total medals. The next closest team was the People's Republic of China with 51 fewer total medals.",
             title: year
         },
-        x: width+margin-10,
+        x: width+margin-32,
         y: margin_top,
         dy: 0,
-        dx: -550
+        dx: -520
         }]
 
         const makeAnnotations = d3.annotation()
