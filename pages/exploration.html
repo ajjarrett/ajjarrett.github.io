@@ -55,16 +55,14 @@
                 }
             </script>
 
-            <div id="pages">Page 1 of 8</p>
-            <button type="button" hidden><a href="../pages/exploration.html">Previous Page</a> </button>
-            <button type="button"><a href="../pages/2004.html">Next Page</a> </button>
-            <p>Team USA has had incredible success at the Olympic Games throughout the past two decades.</p>
-            <p>This page shows Team USA's success at the 2000 Summer Olympic Games. </p>
-
+            <div id="pages">Page 8 of 8</p>
+            <button type="button"><a href="../pages/2020.html">Previous Page</a> </button>
+            <button type="button" hidden><a href="../index.html">Next Page</a> </button>
+            <p>This page allows you to explore the visualization by selecting any year, filtering by summer games or winter games, or hovering over the bars to see more information.  </p>
             <hr>
             
 
-            <div id="season-selection" hidden>
+            <div id="season-selection">
                 <br>
                 <label for="season">Select Season(s) to View:</label>
                 <select id="season" name="season" onchange="to_submit()">
@@ -75,9 +73,9 @@
             </div>
 
 
-            <div class="slidecontainer" hidden>
+            <div class="slidecontainer">
                 <label for="myRange">Select Year to View:</label>
-                <input type="range" min="2000" max="2022" value="2000" class="slider" id="myRange" step="2">
+                <input type="range" min="2000" max="2022" value="2020" class="slider" id="myRange" step="2">
             </div>
             <p id="current_olympics"></p>
 
@@ -206,7 +204,7 @@
 
     }
 
-    async function init(year = '2000') {
+    async function init(year = '2020') {
 
         // Set variable for svg, margin, width, height
         var svg = d3.select("svg"),
@@ -404,33 +402,6 @@
         .on('mouseleave', mouseleave);
 
 
-
-        // Annotation
-        const type = d3.annotationCalloutElbow;
-
-        const annotations = [{
-        note: {
-            label: "In the " + year + " Summer games in " + olympic_locations[year] +", Team USA won more medals than any other team with 93 total medals. The next closest team was the Russian Federation with 4 fewer total medals.",
-            title: year
-        },
-        x: width+margin-10,
-        y: margin_top,
-        dy: 0,
-        dx: -550
-        }]
-
-        const makeAnnotations = d3.annotation()
-        .notePadding(15)
-        .type(type)
-        .annotations(annotations);
-
-        svg
-        .append("g")
-        .attr("class", "annotation-group")
-        .call(makeAnnotations);
-
-
-        //document.getElementById('pages').innerHTML = 'Currently Viewing Page ' + page_number + ' of 7';
 
         // RESOURCES
         // Tooltips reference: https://d3-graph-gallery.com/graph/interactivity_tooltip.html

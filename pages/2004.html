@@ -55,11 +55,11 @@
                 }
             </script>
 
-            <div id="pages">Page 1 of 8</p>
-            <button type="button" hidden><a href="../pages/exploration.html">Previous Page</a> </button>
-            <button type="button"><a href="../pages/2004.html">Next Page</a> </button>
+            <div id="pages">Page 2 of 8</p>
+            <button type="button"><a href="../index.html">Previous Page</a> </button>
+            <button type="button"><a href="../pages/2008.html">Next Page</a> </button>
             <p>Team USA has had incredible success at the Olympic Games throughout the past two decades.</p>
-            <p>This page shows Team USA's success at the 2000 Summer Olympic Games. </p>
+            <p>This page shows Team USA's success at the 2004 Summer Olympic Games. </p>
 
             <hr>
             
@@ -77,7 +77,7 @@
 
             <div class="slidecontainer" hidden>
                 <label for="myRange">Select Year to View:</label>
-                <input type="range" min="2000" max="2022" value="2000" class="slider" id="myRange" step="2">
+                <input type="range" min="2000" max="2022" value="2004" class="slider" id="myRange" step="2">
             </div>
             <p id="current_olympics"></p>
 
@@ -206,7 +206,7 @@
 
     }
 
-    async function init(year = '2000') {
+    async function init(year = '2004') {
 
         // Set variable for svg, margin, width, height
         var svg = d3.select("svg"),
@@ -410,7 +410,7 @@
 
         const annotations = [{
         note: {
-            label: "In the " + year + " Summer games in " + olympic_locations[year] +", Team USA won more medals than any other team with 93 total medals. The next closest team was the Russian Federation with 4 fewer total medals.",
+            label: "In the " + year + " Summer games in " + olympic_locations[year] +", Team USA won more medals than any other team with 101 total medals. The next closest team was the Russian Federation with 11 fewer total medals.",
             title: year
         },
         x: width+margin-10,
